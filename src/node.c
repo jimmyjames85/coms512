@@ -31,3 +31,32 @@ void freeDLLNode(DLLNode * node, int freeData)
 	free((void *) node);
 
 }
+
+
+DLLNode * setNextDLLNode(DLLNode * node, DLLNode * next)
+{
+	if(node==NULL_NODE)
+		return NULL_NODE;
+
+	DLLNode * ret = node->next;
+
+	node->next = next;
+	if(next!=NULL_NODE)
+		next->prev = node;
+
+	return ret;
+}
+
+DLLNode * setPrevDLLNode(DLLNode node, DLLNode * prev)
+{
+	if(node==NULL_NODE)
+		return NULL_NODE;
+
+	DLLNode * ret = node->prev;
+
+	node->prev= prev;
+	if(prev!=NULL_NODE)
+		prev->next= node;
+
+	return ret;
+}

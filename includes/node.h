@@ -14,5 +14,8 @@ typedef struct _struct_dllnode
 DLLNode * newDLLNode(void * data);
 void freeDLLNode(DLLNode * node, int freeData);
 
+DLLNode * setNextDLLNode(DLLNode * node, DLLNode * next);
+DLLNode * setPrevDLLNode(DLLNode * node, DLLNode * prev);
+
 #endif
 
