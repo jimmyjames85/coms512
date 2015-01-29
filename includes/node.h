@@ -12,6 +12,7 @@ typedef struct _struct_dllnode
 } DLLNode;
 
 DLLNode * newDLLNode(void * data);
+void freeDLLNode(DLLNode * node, int freeData);
 
 #endif
 

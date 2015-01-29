@@ -11,3 +11,23 @@ DLLNode * newDLLNode(void * data)
 	ret->data = data;
 	return ret;
 }
+
+void freeDLLNode(DLLNode * node, int freeData)
+{
+	if(node==NULL_NODE)
+		return;
+
+	DLLNode * prev = node->prev;
+	DLLNode * next = node->next;
+
+	if(prev!=NULL_NODE)
+		prev->next = next;
+	if(next!=NULL_NODE)
+		next->prev = prev;
+
+	if(freeData)
+		free((void *) node->data);
+
+	free((void *) node);
+
+}
