@@ -1,13 +1,20 @@
-all: main
+CC=gcc
+CFLAGS=-Iincludes -Wall
 
-main: main.o node.o
-	gcc -Wall obj/node.o obj/main.o -o bin/main
+all:  main
+
+main: main.o node.o list.o
+	$(CC) $(CFLAGS) obj/list.o obj/node.o obj/main.o -o bin/main
+
+
+list.o: src/list.c
+	$(CC) $(CFLAGS) -c src/list.c -o obj/list.o
 
 node.o: src/node.c
-	gcc -Iincludes -Wall -c src/node.c -o obj/node.o
+	$(CC) $(CFLAGS) -c src/node.c -o obj/node.o
 
 main.o: src/main.c
-	gcc -Iincludes -Wall -c src/main.c -o obj/main.o
+	$(CC) $(CFLAGS) -c src/main.c -o obj/main.o
 
 clean:
 	rm obj/* bin/*
