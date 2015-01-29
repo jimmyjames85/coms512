@@ -15,5 +15,3 @@ DLLNode * newDLLNode(void * data);
 
 #endif
 
-
-
