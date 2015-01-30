@@ -14,15 +14,23 @@ typedef struct _struct_dllnode
 } DLLNode;
 
 DLLNode * newDLLNode(void * data);
-void freeDLLNode(DLLNode * node, int freeData);
+void * freeDLLNode(DLLNode * node);
 DLLNode * setNextDLLNode(DLLNode * node, DLLNode * next);
 DLLNode * setPrevDLLNode(DLLNode * node, DLLNode * prev);
 
+//################# Single Linked List ####################
 
-//################# Double Linked List ####################
+typedef struct _struct_sllnode
+{
+		struct _struct_sllnode * next;
+		void * data;
+} SLLNode;
 
-//#########################################################
-//#########################################################
+SLLNode * newSLLNode(void * data);
+void * freeSLLNode(SLLNode * node);
+SLLNode * setNextSLLNode(SLLNode * node, SLLNode * next);
+
+//######################### Node ##########################
 
 typedef struct _struct_node
 {

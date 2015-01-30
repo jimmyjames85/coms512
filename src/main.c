@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include "list.h"
 #include "node.h"
+#include "stack.h"
 
 void printList(List * list)
 {
@@ -41,62 +42,29 @@ char * newString(char * volatile format, ...)
 
 int main(int argc, char * argv[])
 {
+	Stack * stack = newStack();
+	if (stackIsEmpty(stack))
+		printf("Stack is empty.\n");
+	else
+		printf("Stack is NOT empty.\n");
 
-	Node * node1 = newNode(newString("red"));
-	Node * node2 = newNode(newString("yellow"));
-	Node * node3 = newNode(newString("green"));
-	Node * node4 = newNode(newString("black"));
+	printf("Loading...\n");
+	stackPush(stack, newString("one"));
+	stackPush(stack, newString("two"));
+	stackPush(stack, newString("three"));
+	stackPush(stack, newString("four"));
+	stackPush(stack, newString("five"));
 
-	addOutNode(node1, node3);
-	addOutNode(node3, node2);
-	addOutNode(node2, node1);
-	addOutNode(node2, node4);
-	addOutNode(node4, node2);
+	freeStack(stack);
+
+	if (stackIsEmpty(stack))
+		printf("Stack is empty.\n");
+	else
+		printf("Stack is NOT empty.\n");
+
+	printf("Stack peek='%s'\n",(char *)stackPeek(stack));
 
 
-
-	int n = 4;
-	Node * nList[] =
-	{ node1, node2, node3, node4 };
-
-	for (n = 0; n < 4; n++)
-	{
-		List * n2list = nList[n]->out;
-		int i = 0;
-		printf("node%u->out\n",n+1);
-		for (i = 0; i < n2list->size; i++)
-			printf("\t\t%s\n", (char *) ((Node *) n2list->arr[i])->data);
-
-		List * in2list = nList[n]->in;
-		printf("node%u->in\n",n+1);
-		for (i = 0; i < in2list->size; i++)
-			printf("\t\t%s\n", (char *) ((Node *) in2list->arr[i])->data);
-
-	}
-	int i;
-	for (i = 0; i < 4; i++)
-		free(freeNode(nList[i]));
-
-	List * list1 = newList();
-
-	for (i = 0; i < 10; i++)
-	{
-		list_add(list1, newString("item%u", i));
-		printf("list->size = %u, list->capacity = %u :", list1->size, list1->capacity);
-		printList(list1);
-	}
-
-	for (i = 0; i < 10; i++)
-	{
-		char * rem = list_remove(list1, 0);
-		printf("removing %s\n", rem);
-		free(rem);
-		printf("list->size = %u, list->capacity = %u :", list1->size, list1->capacity);
-		printList(list1);
-	}
-
-	free(list1->arr);
-	free(list1);
 
 	return 0;
 }
