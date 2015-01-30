@@ -1,8 +1,8 @@
 #ifndef STACK_H
 #define STACK_H
 #include "node.h"
-typedef SLLNode Stack;
 
+typedef SLLNode Stack;
 
 Stack * newStack();
 void freeStack(Stack * stack);

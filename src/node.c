@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include "node.h"
+
 
 int _null_node_ = 314;//different than std NULL variable
 void * NULL_NODE =  (void *) &_null_node_;

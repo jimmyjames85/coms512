@@ -3,9 +3,12 @@ CFLAGS=-Iincludes -Wall
 
 all:  main
 
-main: main.o node.o list.o stack.o
-	$(CC) $(CFLAGS) obj/stack.o obj/list.o obj/node.o obj/main.o -o bin/main
+main: main.o node.o list.o stack.o state.o
+	$(CC) $(CFLAGS) obj/state.o obj/stack.o obj/list.o obj/node.o obj/main.o -o bin/main
 
+state.o: src/state.o
+	$(CC) $(CFLAGS) -c src/state.c -o obj/state.o
+	
 stack.o: src/stack.c
 	$(CC) $(CFLAGS) -c src/stack.c -o obj/stack.o
 

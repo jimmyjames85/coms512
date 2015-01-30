@@ -4,6 +4,7 @@
 #include "list.h"
 #include "node.h"
 #include "stack.h"
+#include "state.h"
 
 void printList(List * list)
 {
@@ -42,32 +43,26 @@ char * newString(char * volatile format, ...)
 
 int main(int argc, char * argv[])
 {
-	Stack * stack = newStack();
-	if (stackIsEmpty(stack))
-		printf("Stack is empty.\n");
+	State * state = newState();
+	stateAddProperty(state, "green");
+	stateAddProperty(state, "blue");
+
+	char * p = "blue";
+
+	if(stateHasProperty(state, p))
+		printf("does have %s property\n", p);
 	else
-		printf("Stack is NOT empty.\n");
+		printf("does NOT have %s property\n", p);
 
-	printf("Loading...\n");
-	stackPush(stack, newString("one"));
-	stackPush(stack, newString("two"));
-	stackPush(stack, newString("three"));
-	stackPush(stack, newString("four"));
-	stackPush(stack, newString("five"));
 
-	while(!stackIsEmpty(stack))
-		free(stackPop(stack));
 
-	freeStack(stack);
+	stateRemoveProperty(state,"blue");
 
-	/*if (stackIsEmpty(stack))
-		printf("Stack is empty.\n");
+	if(stateHasProperty(state, p))
+		printf("does have %s property\n", p);
 	else
-		printf("Stack is NOT empty.\n");
+		printf("does NOT have %s property\n", p);
 
-	printf("Stack peek='%s'\n",(char *)stackPeek(stack));*/
-
-
-
+	freeState(state);
 	return 0;
 }
