@@ -60,12 +60,12 @@ int main(int argc, char * argv[])
 
 	freeStack(stack);
 
-	if (stackIsEmpty(stack))
+	/*if (stackIsEmpty(stack))
 		printf("Stack is empty.\n");
 	else
 		printf("Stack is NOT empty.\n");
 
-	printf("Stack peek='%s'\n",(char *)stackPeek(stack));
+	printf("Stack peek='%s'\n",(char *)stackPeek(stack));*/
 
 
 
