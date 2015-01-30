@@ -55,6 +55,9 @@ int main(int argc, char * argv[])
 	stackPush(stack, newString("four"));
 	stackPush(stack, newString("five"));
 
+	while(!stackIsEmpty(stack))
+		free(stackPop(stack));
+
 	freeStack(stack);
 
 	if (stackIsEmpty(stack))
