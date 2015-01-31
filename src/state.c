@@ -2,49 +2,95 @@
 #include <string.h>
 #include "state.h"
 
+int uid = 0;
+
 State * newState()
 {
-	State * ret = (State *) newNode(newList());
+	State * ret = (State*) malloc(sizeof(State));
+	ret->out = newList();
+	ret->in = newList();
+	ret->properties = newList();
+	ret->markings = newList();
+	ret->id = uid++;
 	return ret;
 }
 
 void freeState(State * state)
 {
-	List * pList = state->data;
-	while (pList->size > 0)
-		free(list_remove(pList, 0));
+	freeList(state->in);
+	freeList(state->out);
 
-	freeList(state->data);
-	freeNode(state);
+	while (state->properties->size > 0)
+		free(list_remove(state->properties, 0));
+	freeList(state->properties);
+
+	while (state->markings->size > 0)
+		free(list_remove(state->markings, 0));
+	freeList(state->markings);
+
+	free(state);
 }
 
+void stateAddOut(State * state, State * outState)
+{
+	list_add(state->out, outState);
+	list_add(outState->in, state);
+}
+void stateAddIn(State * state, State * inState)
+{
+	stateAddOut(inState, state);
+}
+
+void addStrToList(List * list, char * str)
+{
+	size_t len = strlen(str);
+	char * newStr = malloc(len * sizeof(char));
+	strcpy(newStr, str);
+	list_add(list, newStr);
+}
+int doesListOfStringsContain(List * list, char * str)
+{
+	int i;
+	short found = 0;
+	for (i = 0; !found && i < list->size; i++)
+		found = (strcmp(str, list->arr[i]) == 0);
+	return found;
+}
+void removeStrFromList(List * list, char * str)
+{
+	int i;
+	for (i = list->size - 1; i >= 0; i--)
+	{
+		if (strcmp(str, list->arr[i]) == 0)
+			free(list_remove(list, i));
+	}
+}
 void stateAddProperty(State * state, char * p)
 {
-	size_t len = strlen(p);
-	char * newStr = malloc(len * sizeof(char));
-	strcpy(newStr,p);
-	list_add(state->data,newStr);
+	addStrToList(state->properties, p);
+}
+void stateAddMarking(State * state, char * m)
+{
+	addStrToList(state->markings, m);
 }
 
 int stateHasProperty(State * state, char * p)
 {
-	List * pList = state->data;
-	int i;
-	short found =0;
-	for(i=0;!found && i<pList->size;i++)
-		found = (strcmp(p,pList->arr[i])==0);
-	return found;
+	return doesListOfStringsContain(state->properties, p);
 }
 
+int stateHasMarking(State * state, char * m)
+{
+	return doesListOfStringsContain(state->markings, m);
+}
 
 int stateRemoveProperty(State * state, char * p)
 {
-	List * pList = state->data;
-	int i;
-	for(i=pList->size-1;i>=0;i--)
-	{
-		if(strcmp(p,pList->arr[i])==0);
-			free(list_remove(pList,i));
-	}
+	removeStrFromList(state->properties,p);
+	return 1;
+}
+int stateRemoveMarking(State * state, char * m)
+{
+	removeStrFromList(state->markings,m);
 	return 1;
 }
