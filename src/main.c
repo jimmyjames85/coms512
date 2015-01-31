@@ -43,18 +43,18 @@ char * newString(char * volatile format, ...)
 void printKripke(List * kripke)
 {
 	int i, j;
-	for(i=0;i<kripke->size;i++)
+	for (i = 0; i < kripke->size; i++)
 	{
 		State * state = (State *) kripke->arr[i];
-		printf("State %d: ( ",state->id);
+		printf("State %d: ( ", state->id);
 
-		for(j=0;j<state->properties->size;j++)
-			printf("%s ",(char *)state->properties->arr[j]);
+		for (j = 0; j < state->properties->size; j++)
+			printf("%s ", (char *) state->properties->arr[j]);
 
 		printf(")\n");
 
-		for(j=0;j<state->markings->size;j++)
-			printf("\t%s\n",(char *)state->markings->arr[j]);
+		for (j = 0; j < state->markings->size; j++)
+			printf("\t%s\n", (char *) state->markings->arr[j]);
 
 		printf("\n\n");
 	}
@@ -62,23 +62,74 @@ void printKripke(List * kripke)
 void markEXp(List * kripke, char * p)
 {
 	int i, j;
+	char * m = newString("EX%s", p);
+
 	for (i = 0; i < kripke->size; i++)
 	{
 		State * state = (State *) kripke->arr[i];
+		int marked = 0;
 
 		List * nextStates = state->out;
-		for (j = 0; j < nextStates->size; j++)
+		for (j = 0; j < nextStates->size && !marked; j++)
 		{
 			State * nextState = (State *) nextStates->arr[j];
-			if (stateHasProperty(nextState, p))
+			if (!marked && stateHasProperty(nextState, p))
 			{
-				char * m = newString("EX%s", p);
-				printf("%s\n",m);
 				stateAddMarking(state, m);
-				free (m);
+				marked = 1;
 			}
 		}
 	}
+	free(m);
+}
+
+void markAFp(List * kripke, char * p)
+{
+	int i, j;
+	char * m = newString("AF%s", p);
+
+	int change = 1;
+	while (change)
+	{
+		change = 0;
+		for (i = 0; i < kripke->size; i++)
+		{
+			State * state = (State *) kripke->arr[i];
+			int marked = 0;
+
+			if (stateHasProperty(state, p) && !stateHasMarking(state,m))
+			{
+				marked = 1;
+				stateAddMarking(state, m);
+			}
+
+			if(!marked)
+			{
+				int nextStateSum=0;
+
+				List * nextStates = state->out;
+				for (j = 0; j < nextStates->size; j++)
+				{
+					State * nextState = (State *) nextStates->arr[j];
+
+					if (stateHasMarking(nextState, m))
+						nextStateSum++;
+
+				}
+				if(nextStateSum==nextStates->size && !stateHasMarking(state,m))
+				{
+					stateAddMarking(state, m);
+					marked = 1;
+				}
+			}
+
+
+			change += marked;
+		}
+		printf("change=%d\n",change);
+	}
+
+	free(m);
 }
 
 int main(int argc, char * argv[])
@@ -114,7 +165,8 @@ int main(int argc, char * argv[])
 	list_add(kripke, state3);
 	list_add(kripke, state4);
 
-	markEXp(kripke,"b");
+	markAFp(kripke, "a");
+	markEXp(kripke, "b");
 	printKripke(kripke);
 
 	freeState(state0);
@@ -123,8 +175,6 @@ int main(int argc, char * argv[])
 	freeState(state3);
 	freeState(state4);
 	freeList(kripke);
-
-
 
 	return 0;
 }
