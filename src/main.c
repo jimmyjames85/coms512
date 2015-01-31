@@ -43,26 +43,36 @@ char * newString(char * volatile format, ...)
 
 int main(int argc, char * argv[])
 {
-	State * state = newState();
-	stateAddProperty(state, "green");
-	stateAddProperty(state, "blue");
+	State * state2 = newState();
+
+
+	State * state1 = newState();
+
+	State * state3 = newState();
+
+	printf("state1->id=%i\n",state1->id);
+	printf("state2->id=%i\n",state2->id);
+	printf("state3->id=%i\n",state3->id);
+
+	stateAddProperty(state1, "green");
+	stateAddProperty(state1, "blue");
 
 	char * p = "blue";
 
-	if(stateHasProperty(state, p))
+	if(stateHasProperty(state1, p))
 		printf("does have %s property\n", p);
 	else
 		printf("does NOT have %s property\n", p);
 
 
 
-	stateRemoveProperty(state,"blue");
+	stateRemoveProperty(state1,"blue");
 
-	if(stateHasProperty(state, p))
+	if(stateHasProperty(state1, p))
 		printf("does have %s property\n", p);
 	else
 		printf("does NOT have %s property\n", p);
 
-	freeState(state);
+	freeState(state1);
 	return 0;
 }

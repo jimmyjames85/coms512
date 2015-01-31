@@ -5,7 +5,7 @@
 
 typedef struct _struct_State
 {
-		long id;
+		int id;
 		List * out; //List of neighbors I point to
 		List * in; //List of neighbors that point to me
 		List * properties;//Property List (list of char *)

@@ -43,7 +43,7 @@ void stateAddIn(State * state, State * inState)
 
 void addStrToList(List * list, char * str)
 {
-	size_t len = strlen(str);
+	size_t len = strlen(str)+1;
 	char * newStr = malloc(len * sizeof(char));
 	strcpy(newStr, str);
 	list_add(list, newStr);
