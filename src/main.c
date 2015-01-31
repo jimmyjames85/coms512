@@ -40,40 +40,90 @@ char * newString(char * volatile format, ...)
 
 	return str;
 }
+void printKripke(List * kripke)
+{
+	int i, j;
+	for(i=0;i<kripke->size;i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		printf("State %d: ( ",state->id);
+
+		for(j=0;j<state->properties->size;j++)
+			printf("%s ",(char *)state->properties->arr[j]);
+
+		printf(")\n");
+
+		for(j=0;j<state->markings->size;j++)
+			printf("\t%s\n",(char *)state->markings->arr[j]);
+
+		printf("\n\n");
+	}
+}
+void markEXp(List * kripke, char * p)
+{
+	int i, j;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+
+		List * nextStates = state->out;
+		for (j = 0; j < nextStates->size; j++)
+		{
+			State * nextState = (State *) nextStates->arr[j];
+			if (stateHasProperty(nextState, p))
+			{
+				char * m = newString("EX%s", p);
+				printf("%s\n",m);
+				stateAddMarking(state, m);
+				free (m);
+			}
+		}
+	}
+}
 
 int main(int argc, char * argv[])
 {
-	State * state2 = newState();
-
-
+	State * state0 = newState();
 	State * state1 = newState();
-
+	State * state2 = newState();
 	State * state3 = newState();
+	State * state4 = newState();
 
-	printf("state1->id=%i\n",state1->id);
-	printf("state2->id=%i\n",state2->id);
-	printf("state3->id=%i\n",state3->id);
+	stateAddProperty(state1, "a");
+	stateAddProperty(state2, "a");
+	stateAddProperty(state2, "b");
+	stateAddProperty(state3, "b");
+	stateAddProperty(state4, "b");
 
-	stateAddProperty(state1, "green");
-	stateAddProperty(state1, "blue");
+	stateAddOut(state0, state1);
+	stateAddOut(state0, state4);
 
-	char * p = "blue";
+	stateAddOut(state1, state2);
 
-	if(stateHasProperty(state1, p))
-		printf("does have %s property\n", p);
-	else
-		printf("does NOT have %s property\n", p);
+	stateAddOut(state2, state3);
 
+	stateAddOut(state3, state1);
+	stateAddOut(state3, state3);
 
+	stateAddOut(state4, state4);
 
-	stateRemoveProperty(state1,"blue");
+	List * kripke = newList();
+	list_add(kripke, state0);
+	list_add(kripke, state1);
+	list_add(kripke, state2);
+	list_add(kripke, state3);
+	list_add(kripke, state4);
 
-	if(stateHasProperty(state1, p))
-		printf("does have %s property\n", p);
-	else
-		printf("does NOT have %s property\n", p);
-	freeState(state3);
+	markEXp(kripke,"b");
+	printKripke(kripke);
+
+	freeState(state0);
 	freeState(state1);
 	freeState(state2);
+	freeState(state3);
+	freeState(state4);
+
+
+
 	return 0;
 }
