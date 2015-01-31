@@ -122,6 +122,7 @@ int main(int argc, char * argv[])
 	freeState(state2);
 	freeState(state3);
 	freeState(state4);
+	freeList(kripke);
 
 
 
