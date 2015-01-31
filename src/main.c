@@ -72,7 +72,8 @@ int main(int argc, char * argv[])
 		printf("does have %s property\n", p);
 	else
 		printf("does NOT have %s property\n", p);
-
+	freeState(state3);
 	freeState(state1);
+	freeState(state2);
 	return 0;
 }
