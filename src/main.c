@@ -302,8 +302,8 @@ void markEG(List * kripke, char * p)
 void markEF(List * kripke, char *p)
 {
 	int i;
-	char * m = newString("E(trueU%s)",p);
-	char * mEFp = newString("EF%s",p);
+	char * m = newString("E(trueU%s)", p);
+	char * mEFp = newString("EF%s", p);
 
 	markEU(kripke, "true", p);
 	for (i = 0; i < kripke->size; i++)
@@ -323,37 +323,44 @@ void markAG(List * kripke, char * p)
 {
 
 	char * m;
-	char * mAGp = newString("AG%s",p);
+	char * mAGp = newString("AG%s", p);
 	int i;
 
-	markNot(kripke,p);
+	markNot(kripke, p);
 
-	m= newString("~(%s)",p);
-	markEF(kripke,m);
+	m = newString("~(%s)", p);
+	markEF(kripke, m);
 
 	free(m);
-	m=newString("EF~(%s)",p);
+	m = newString("EF~(%s)", p);
 
-	markNot(kripke,m);
+	markNot(kripke, m);
 	free(m);
-	m=newString("~(EF~(%s))",p);
+	m = newString("~(EF~(%s))", p);
 
-	for(i=0;i<kripke->size;i++)
+	for (i = 0; i < kripke->size; i++)
 	{
-		State * state = (State *)kripke->arr[i];
-		if(stateHasMarking(state,m))
+		State * state = (State *) kripke->arr[i];
+		if (stateHasMarking(state, m))
 		{
-			stateRemoveMarking(state,m);
-			stateAddMarking(state,mAGp);
+			stateRemoveMarking(state, m);
+			stateAddMarking(state, mAGp);
 		}
 	}
 
 	free(m);
 	free(mAGp);
-
 }
 
-int main(int argc, char * argv[])
+void moveMarkingToProperty(List * kripke, char * m)
+{
+	int i;
+	for (i = 0; i < kripke->size; i++)
+		if (stateHasMarking((State*) kripke->arr[i], m))
+			stateAddProperty(kripke->arr[i], m);
+}
+
+void HW1P1()
 {
 	State * state0 = newState();
 	State * state1 = newState();
@@ -379,25 +386,51 @@ int main(int argc, char * argv[])
 	list_add(kripke, state1);
 	list_add(kripke, state2);
 	list_add(kripke, state3);
+
+//#1(a) EFEGq
 	resetMarking(kripke);
 
-	markNot(kripke,"p");
-	markNot(kripke,"q");
-	markOr(kripke,"~(p)","~(q)");
+	markEG(kripke, "q");
+	markEF(kripke, "EGq");
 
-	markAF(kripke,"(~(p)||~(q))");
-	markAG(kripke,"AF(~(p)||~(q))");
+	//moveMarkingToProperty(kripke,"EGq");
+	//moveMarkingToProperty(kripke,"EFEGq");
+	//printKripke(kripke);
 
-	//markAFp(kripke,"AG(p&&q)");
+//#1(b) AXq => AXAXq
+	resetMarking(kripke);
+	markAX(kripke, "q");
+	markAX(kripke, "AXq");
+	//moveMarkingToProperty(kripke, "AXq");
+	//moveMarkingToProperty(kripke, "AXAXq");
+	//printKripke(kripke);
 
+//#1(c) AFAG(p&&q) => AGAF(p&&q)
+	resetMarking(kripke);
 
+	markAnd(kripke, "p", "q");
+	markAG(kripke, "(p&&q)");
+	//printKripke(kripke);
 
+//#1(d) AGAF(~(p)||(~q))
+	markNot(kripke, "p");
+	markNot(kripke, "q");
+	markOr(kripke, "~(p)", "~(q)");
+	markAF(kripke, "(~(p)||~(q))");
+	markAG(kripke, "AF(~(p)||~(q))");
+	moveMarkingToProperty(kripke, "AF(~(p)||~(q))");
+	resetMarking(kripke);
 	printKripke(kripke);
+
 	freeState(state0);
 	freeState(state1);
 	freeState(state2);
 	freeState(state3);
 	freeList(kripke);
 
+}
+int main(int argc, char * argv[])
+{
+	HW1P1();
 	return 0;
 }
