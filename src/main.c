@@ -59,7 +59,80 @@ void printKripke(List * kripke)
 		printf("\n\n");
 	}
 }
-void markEXp(List * kripke, char * p)
+
+void resetMarking(List * kripke)
+{
+	int i, j;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+
+		while (state->markings->size > 0)
+			stateRemoveMarking(state, state->markings->arr[0]);
+
+		for (j = 0; j < state->properties->size; j++)
+			stateAddMarking(state, (char *) state->properties->arr[j]);
+
+		stateAddMarking(state, "true");
+	}
+
+}
+
+void markNot(List * kripke, char * p)
+{
+	char * m = newString("~(%s)", p);
+	int i;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if (!stateHasMarking(state, p) && !stateHasMarking(state, m))
+			stateAddMarking(state, m);
+	}
+	free(m);
+}
+
+void markAnd(List * kripke, char * p, char * q)
+{
+	char * m1 = newString("(%s&&%s)", p, q);
+	char * m2 = newString("(%s&&%s)", q, p);
+
+	int i;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if (stateHasMarking(state, p) && stateHasMarking(state, q))
+		{
+			if (!stateHasMarking(state, m1))
+				stateAddMarking(state, m1);
+			if (!stateHasMarking(state, m2))
+				stateAddMarking(state, m2);
+		}
+	}
+	free(m1);
+	free(m2);
+}
+void markOr(List * kripke, char * p, char * q)
+{
+	char * m1 = newString("(%s||%s)", p, q);
+	char * m2 = newString("(%s||%s)", q, p);
+
+	int i;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if ((stateHasMarking(state, p) || stateHasMarking(state, q)))
+		{
+			if (!stateHasMarking(state, m1))
+				stateAddMarking(state, m1);
+			if (!stateHasMarking(state, m2))
+				stateAddMarking(state, m2);
+		}
+	}
+	free(m1);
+	free(m2);
+}
+
+void markEX(List * kripke, char * p)
 {
 	int i, j;
 	char * m = newString("EX%s", p);
@@ -83,7 +156,7 @@ void markEXp(List * kripke, char * p)
 	free(m);
 }
 
-void markAFp(List * kripke, char * p)
+void markAF(List * kripke, char * p)
 {
 	int i, j;
 	char * m = newString("AF%s", p);
@@ -97,15 +170,15 @@ void markAFp(List * kripke, char * p)
 			State * state = (State *) kripke->arr[i];
 			int marked = 0;
 
-			if (stateHasMarking(state, p) && !stateHasMarking(state,m))
+			if (stateHasMarking(state, p) && !stateHasMarking(state, m))
 			{
 				marked = 1;
 				stateAddMarking(state, m);
 			}
 
-			if(!marked)
+			if (!marked)
 			{
-				int nextStateSum=0;
+				int nextStateSum = 0;
 
 				List * nextStates = state->out;
 				for (j = 0; j < nextStates->size; j++)
@@ -116,13 +189,12 @@ void markAFp(List * kripke, char * p)
 						nextStateSum++;
 
 				}
-				if(nextStateSum==nextStates->size && !stateHasMarking(state,m))
+				if (nextStateSum == nextStates->size && !stateHasMarking(state, m))
 				{
 					stateAddMarking(state, m);
 					marked = 1;
 				}
 			}
-
 
 			change += marked;
 		}
@@ -131,20 +203,153 @@ void markAFp(List * kripke, char * p)
 	free(m);
 }
 
-void resetMarking(List * kripke)
+/**
+ *	marks all states that satisfy E(pUq)
+ */
+void markEU(List * kripke, char * p, char * q)
 {
-	int i,j;
-	for(i=0;i<kripke->size;i++)
+	int i, j;
+	char * mEpUq = newString("E(%sU%s)", p, q);
+	for (i = 0; i < kripke->size; i++)
 	{
-		State  * state = (State *) kripke->arr[i];
-
-		while(state->markings->size>0)
-			stateRemoveMarking(state,state->markings->arr[0]);
-
-		for(j=0;j<state->properties->size;j++)
-			stateAddMarking(state,(char *)state->properties->arr[j]);
+		State * state = kripke->arr[i];
+		if (stateHasMarking(state, q))
+			stateAddMarking(state, mEpUq);
 	}
 
+	int subChange;
+	int change = 1; //intially to get into the loop
+	while (change)
+	{
+		change = 0;
+		for (i = 0; i < kripke->size; i++)
+		{
+			State * state = kripke->arr[i];
+			if (stateHasMarking(state, p) && !stateHasMarking(state, mEpUq))
+			{
+				subChange = 0;
+				for (j = 0; j < state->out->size && !subChange; j++)
+				{
+					State * outState = (State *) state->out->arr[j];
+
+					if (stateHasMarking(outState, mEpUq))
+					{
+						subChange = 1;
+						change = 1;
+						stateAddMarking(state, mEpUq);
+					}
+				}
+
+			}
+		}
+	}
+	free(mEpUq);
+}
+
+void markAX(List * kripke, char * p)
+{
+
+	markNot(kripke, p);
+	char * m = newString("~(%s)", p);
+	markEX(kripke, m); //EX~p
+	free(m);
+	m = newString("EX~(%s)", p);
+	markNot(kripke, m);
+	free(m);
+	m = newString("~(EX~(%s))", p);
+	char * mAXp = newString("AX%s", p);
+
+	int i;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if (stateHasMarking(state, m))
+		{
+			stateRemoveMarking(state, m);
+			stateAddMarking(state, mAXp);
+		}
+	}
+	free(m);
+	free(mAXp);
+
+}
+void markEG(List * kripke, char * p)
+{
+	markNot(kripke, p);
+	char * m = newString("~(%s)", p);
+	markAF(kripke, m);
+	free(m);
+	m = newString("AF~(%s)", p);
+	markNot(kripke, m);
+	free(m);
+
+	m = newString("~(AF~(%s))", p);
+	char * mEGp = newString("EG%s", p);
+
+	int i;
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if (stateHasMarking(state, m))
+		{
+			stateRemoveMarking(state, m);
+			stateAddMarking(state, mEGp);
+		}
+	}
+	free(m);
+	free(mEGp);
+}
+void markEF(List * kripke, char *p)
+{
+	int i;
+	char * m = newString("E(trueU%s)",p);
+	char * mEFp = newString("EF%s",p);
+
+	markEU(kripke, "true", p);
+	for (i = 0; i < kripke->size; i++)
+	{
+		State * state = (State *) kripke->arr[i];
+		if (stateHasMarking(state, m))
+		{
+			stateRemoveMarking(state, m);
+			stateAddMarking(state, mEFp);
+		}
+	}
+
+	free(m);
+	free(mEFp);
+}
+void markAG(List * kripke, char * p)
+{
+
+	char * m;
+	char * mAGp = newString("AG%s",p);
+	int i;
+
+	markNot(kripke,p);
+
+	m= newString("~(%s)",p);
+	markEF(kripke,m);
+
+	free(m);
+	m=newString("EF~(%s)",p);
+
+	markNot(kripke,m);
+	free(m);
+	m=newString("~(EF~(%s))",p);
+
+	for(i=0;i<kripke->size;i++)
+	{
+		State * state = (State *)kripke->arr[i];
+		if(stateHasMarking(state,m))
+		{
+			stateRemoveMarking(state,m);
+			stateAddMarking(state,mAGp);
+		}
+	}
+
+	free(m);
+	free(mAGp);
 
 }
 
@@ -154,47 +359,44 @@ int main(int argc, char * argv[])
 	State * state1 = newState();
 	State * state2 = newState();
 	State * state3 = newState();
-	State * state4 = newState();
 
-	stateAddProperty(state1, "a");
-	stateAddProperty(state2, "a");
-	stateAddProperty(state2, "b");
-	stateAddProperty(state3, "b");
-	stateAddProperty(state4, "b");
-
-
+	stateAddProperty(state1, "p");
+	stateAddProperty(state1, "q");
+	stateAddProperty(state2, "q");
+	stateAddProperty(state2, "r");
 
 	stateAddOut(state0, state1);
-	stateAddOut(state0, state4);
+	stateAddOut(state0, state2);
 
 	stateAddOut(state1, state2);
 
-	stateAddOut(state2, state3);
+	stateAddOut(state2, state1);
 
 	stateAddOut(state3, state1);
-	stateAddOut(state3, state3);
-
-	stateAddOut(state4, state4);
 
 	List * kripke = newList();
 	list_add(kripke, state0);
 	list_add(kripke, state1);
 	list_add(kripke, state2);
 	list_add(kripke, state3);
-	list_add(kripke, state4);
-
-
 	resetMarking(kripke);
-	markAFp(kripke, "a");
-	markEXp(kripke, "b");
-	markAFp(kripke, "b");
-	printKripke(kripke);
 
+	markNot(kripke,"p");
+	markNot(kripke,"q");
+	markOr(kripke,"~(p)","~(q)");
+
+	markAF(kripke,"(~(p)||~(q))");
+	markAG(kripke,"AF(~(p)||~(q))");
+
+	//markAFp(kripke,"AG(p&&q)");
+
+
+
+	printKripke(kripke);
 	freeState(state0);
 	freeState(state1);
 	freeState(state2);
 	freeState(state3);
-	freeState(state4);
 	freeList(kripke);
 
 	return 0;
