@@ -1,9 +1,9 @@
 CC=gcc
 CFLAGS=-Iincludes -Wall
 
-all:  main
+all:  main 
 
-main: main.o node.o list.o stack.o state.o
+main:folders main.o node.o list.o stack.o state.o 
 	$(CC) $(CFLAGS) obj/state.o obj/stack.o obj/list.o obj/node.o obj/main.o -o bin/main
 
 state.o: src/state.c
@@ -21,5 +21,8 @@ node.o: src/node.c
 main.o: src/main.c
 	$(CC) $(CFLAGS) -c src/main.c -o obj/main.o
 
+folders:
+	if ! [ -d "./obj" ]; then mkdir obj ; fi; if ! [ -d "./bin" ]; then mkdir bin ; fi  
+	
 clean:
-	rm obj/* bin/*
+	rm -rf obj bin
