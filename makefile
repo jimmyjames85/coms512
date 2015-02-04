@@ -1,8 +1,20 @@
+CCP=g++
 CC=gcc
 CFLAGS=-Iincludes -Wall
 
-all:  main 
+all:  main2
 
+main2: folders main2.o ArrayList.o
+	$(CCP) $(CFLAGS) obj/ArrayList.o obj/main2.o -o bin/main
+
+ArrayList.o: src/ArrayList.cpp
+	$(CCP) $(CFLAGS) -c src/ArrayList.cpp -o obj/ArrayList.o
+
+main2.o: src/main2.cpp
+	$(CCP) $(CFLAGS) -c src/main2.cpp -o obj/main2.o
+	
+	
+	
 main:folders main.o node.o list.o stack.o state.o 
 	$(CC) $(CFLAGS) obj/state.o obj/stack.o obj/list.o obj/node.o obj/main.o -o bin/main
 
