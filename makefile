@@ -1,11 +1,14 @@
 CCP=g++
 CC=gcc
-CFLAGS=-Iincludes -Wall
+CFLAGS=-Iincludes  -Wall
 
 all:  main2
 
-main2: folders main2.o ArrayList.o
-	$(CCP) $(CFLAGS) obj/ArrayList.o obj/main2.o -o bin/main
+main2: folders Integer.o main2.o 
+	$(CCP) $(CFLAGS) obj/Integer.o obj/ArrayList.o obj/main2.o -o bin/main
+
+Integer.o: src/Integer.cpp
+	$(CCP) $(CFLAGS) -c src/Integer.cpp -o obj/Integer.o
 
 ArrayList.o: src/ArrayList.cpp
 	$(CCP) $(CFLAGS) -c src/ArrayList.cpp -o obj/ArrayList.o
