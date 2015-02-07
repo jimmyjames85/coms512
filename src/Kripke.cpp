@@ -22,6 +22,12 @@ bool KripkeState::hasMarking(string m)
 	return vectorContains(markings, m);
 }
 
+void KripkeState::addOut(KripkeState & to)
+{
+	out.push_back(to);
+	to.in.push_back(*this);
+}
+
 void Kripke::resetMarks()
 {
 	for (unsigned i = 0; i < this->states.size(); i++)
@@ -30,13 +36,13 @@ void Kripke::resetMarks()
 		states[i].markings.push_back((string) "true");
 
 		for (unsigned j = 0; j < states[i].properties.size(); j++)
-				states[i].markings.push_back(states[i].properties[j]);
+			states[i].markings.push_back(states[i].properties[j]);
 	}
 }
 
 void Kripke::markNot(string p)
 {
-	string m = "~(" + p+")";
+	string m = "~(" + p + ")";
 
 	for (unsigned i = 0; i < states.size(); i++)
 	{
@@ -73,14 +79,51 @@ string Kripke::toString()
 		ret << "State " << states[i].id << ": (";
 
 		for (unsigned j = 0; j < states[i].properties.size(); j++)
-			ret << " " <<states[i].properties[j];
-		ret <<" )\n";
+			ret << " " << states[i].properties[j];
+		ret << " )\n";
 
 		for (unsigned j = 0; j < states[i].markings.size(); j++)
-			ret <<"\t" << states[i].markings[j] << "\n";
+			ret << "\t" << states[i].markings[j] << "\n";
 
 		ret << "\n\n";
 	}
 	return ret.str();
 }
 
+void Kripke::markOr(string p, string q)
+{
+	string m1 = "(" + p + "||" + q + ")";
+	string m2 = "(" + q + "||" + p + ")";
+
+	for (unsigned i = 0; i < states.size(); i++)
+	{
+		if ((states[i].hasMarking(p) || states[i].hasMarking(q)))
+		{
+			if (!states[i].hasMarking(m1))
+				states[i].markings.push_back(m1);
+			if (!states[i].hasMarking(m2))
+				states[i].markings.push_back(m2);
+		}
+	}
+}
+
+void Kripke::markEX(string p)
+{
+	string m = "EX" + p;
+	for (unsigned i = 0; i < states.size(); i++)
+	{
+		if(states[i].hasProperty(p))
+			states[i].markings.push_back(m);
+
+		bool marked = false;
+		for (unsigned j = 0; j < states[i].out.size() && !marked; j++)
+		{
+			//State * nextState = (State *) nextStates->arr[j];
+			if (!marked && states[i].out[j].hasMarking(p))
+			{
+				states[i].markings.push_back(m);
+				marked = true;
+			}
+		}
+	}
+}

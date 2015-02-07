@@ -11,11 +11,14 @@ class KripkeState
 		KripkeState();
 		vector<string> properties;
 		vector<string> markings;
-		vector<KripkeState> out;
-		vector<KripkeState> in;
 		bool hasProperty(string);
 		bool hasMarking(string);
+		void addOut(KripkeState &);
+		void addIn(KripkeState &);
 		int id;
+		vector<KripkeState> out;
+		vector<KripkeState> in;
+
 };
 
 class Kripke
@@ -26,6 +29,8 @@ class Kripke
 		void resetMarks();
 		void markNot(string);
 		void markAnd(string p, string q);
+		void markOr(string p, string q);
+		void markEX(string p);
 		string toString();
 };
 #endif
