@@ -1,8 +1,8 @@
+#include <cnode.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include "list.h"
-#include "node.h"
 #include "stack.h"
 #include "state.h"
 

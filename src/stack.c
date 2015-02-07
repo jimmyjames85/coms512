@@ -1,6 +1,6 @@
+#include <cnode.h>
 #include <stdlib.h>
 #include "stack.h"
-#include "node.h"
 
 //int _terminal_node_ = 217;//different than null_node
 //void * TERMINAL_NODE = (void *) &_terminal_node_;
