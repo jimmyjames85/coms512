@@ -1,6 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
-#include "node.h"
+#include "cnode.h"
 
 
 typedef struct _struct_State

@@ -1,5 +1,5 @@
-#ifndef NODE_H
-#define NODE_H
+#ifndef C_NODE_H
+#define C_NODE_H
 #include <stdlib.h>
 #include "list.h"
 
@@ -37,15 +37,15 @@ typedef struct _struct_node
 		List * out; //List of neighbors I point to
 		List * in; //List of neighbors that point to me
 		void * data;
-} Node;
+} CNode;
 
-Node * newNode(void * data);
+CNode * newNode(void * data);
 
 //returns the data
-void * freeNode(Node * node);
+void * freeNode(CNode * node);
 
-void addOutNode(Node * node, Node * outNode);
-void addInNode(Node * node, Node * inNode);
+void addOutNode(CNode * node, CNode * outNode);
+void addInNode(CNode * node, CNode * inNode);
 
 //void removeOutNode(Node * node, Node * outNode);
 //void removeInNode(Node * node, Node * inNode);

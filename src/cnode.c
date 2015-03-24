@@ -1,5 +1,5 @@
+#include <cnode.h>
 #include <stdlib.h>
-#include "node.h"
 
 
 int _null_node_ = 314;//different than std NULL variable
@@ -86,16 +86,16 @@ SLLNode * setNextSLLNode(SLLNode * node, SLLNode * next)
 	return ret;
 }
 
-Node * newNode(void * data)
+CNode * newNode(void * data)
 {
-	Node * ret = (Node *) malloc(sizeof(Node));
+	CNode * ret = (CNode *) malloc(sizeof(CNode));
 	ret->out = newList();
 	ret->in = newList();
 	ret->data = data;
 	return ret;
 }
 
-void * freeNode(Node * node)
+void * freeNode(CNode * node)
 {
 	if (node == NULL_NODE)
 		return 0;
@@ -108,7 +108,7 @@ void * freeNode(Node * node)
 	return ret;
 }
 
-void addOutNode(Node * node, Node * outNode)
+void addOutNode(CNode * node, CNode * outNode)
 {
 	if (node == NULL_NODE || outNode == NULL_NODE)
 		return;
@@ -117,7 +117,7 @@ void addOutNode(Node * node, Node * outNode)
 	list_add(outNode->in, node);
 }
 
-void addInNode(Node * node, Node * inNode)
+void addInNode(CNode * node, CNode * inNode)
 {
 	addOutNode(inNode, node);
 }
