@@ -1,0 +1,33 @@
+H4.4
+
+4. Can you use LTL to verify the following the properties for a state
+   in a Kripke structure? Justify.
+
+   (a) There exists no path where p holds until q.
+       
+       In CTL this is equivalent to:
+         
+       !E(p U q)   =    
+       !E(p U q)   =    A(!(p U q))
+
+       Which in LTL is just simply
+
+       ! (p U q)
+
+
+
+
+   (b) There exists a path where p holds in a state, which is followed
+       by a state where q holds.
+
+       In CTL this is equivalent to:
+       
+       EF(p && Xq)
+       EF(p && Xq)  =  !AG(!(p && Xq))
+
+       Which in LTL is 
+
+       ! G( !(p && Xq) )
+
+
+

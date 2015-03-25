@@ -1,0 +1,25 @@
+H4.3
+
+Thm: 
+For any Kripke structure, a state satisfies the CTL formula AG(a ∨ b)
+if it satisfies the LTL formula G(a) ∨ G(b), where a and b are atomic
+propositions.
+
+This is FALSE
+
+Consider the following Kripke Structure
+
+
+                      ,------.
+       ~~~~~        ~~∨~~    |
+   --> | a | ---->  | b | ---' 
+       ~~~~~        ~~~~~ 
+
+Here there is only one path: a -> b -> b -> ... -> b
+
+In CTL AG(a ∨ b) is true because in every path every state satisfies
+either a or b. However in LTL G(a) ∨ G(b) does not hold, because not
+every state in every path satisfies G(a) and not every state in every
+path satisfies G(b). The equivalent LTL spec would just be G(a ∨ b).
+
+
