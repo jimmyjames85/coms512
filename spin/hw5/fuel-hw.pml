@@ -114,10 +114,16 @@ init
 #define responsive ( master_responsive == 1 )
 
 
-ltl p1 /* write your property for Q2a */
-ltl p2 /* write your property for Q2b */
-ltl p3 /* write your property for Q2c */
-ltl p4 /* write your property for Q2d */
+/*  <>  :=  F
+    []  :=  G
+*/
+
+
+ltl p1 { [] <> (runM ) -> [] <> ( safe ) }
+/*ltl p1 /* write your property for Q2a */
+/*ltl p2 /* write your property for Q2b */
+/*ltl p3 /* write your property for Q2c */
+/*ltl p4 /* write your property for Q2d */
 
 /**************************************
 

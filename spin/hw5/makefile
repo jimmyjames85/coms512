@@ -4,8 +4,8 @@ NONEXT=-DNXT
 
 all: pan
 
-run: trail  frogcrossing-hw.pml.trail
-	spin -t ${file}
+run: trail ${file}.trail
+	spin -t -v ${file}
 
 trail: pan
 	./pan -a
@@ -13,7 +13,7 @@ trail: pan
 pan: pan.c
 	gcc ${NEXTENABLED} -DXUSAFE -o pan pan.c
 
-pan.c: frogcrossing-hw.pml
+pan.c: ${file}
 	spin -a ${file}
 
 clean:
