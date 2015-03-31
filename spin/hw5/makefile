@@ -1,4 +1,4 @@
-file=frogcrossing-hw.pml
+file=fuel-hw.pml
 NEXTENABLED=
 NONEXT=-DNXT
 
