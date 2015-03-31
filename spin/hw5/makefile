@@ -4,11 +4,14 @@ NONEXT=-DNXT
 
 all: pan
 
+
 run: trail ${file}.trail
 	spin -t -v ${file}
 
+#-g show all global variables
+
 trail: pan
-	./pan -a
+	./pan -a -v
 
 pan: pan.c
 	gcc ${NEXTENABLED} -DXUSAFE -o pan pan.c
