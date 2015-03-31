@@ -48,7 +48,7 @@ proctype master(chan input; chan output)
       ::  atomic{ master_responsive == 0 -> skip; }  /* master is unresponsive */
       ::  atomic{ lost[0] = 1 -> skip; }             /* message from the master is lost */
       fi;
-      Lm: printf("\n    The master has run\n\n");            /* to keep track whether the master has run once */ 
+      Lm: printf("The master has run\n");            /* to keep track whether the master has run once */ 
    od;
 }
 
@@ -64,7 +64,7 @@ proctype backup(chan input; chan output)
         :: atomic{ master_responsive == 0 -> output! 1; }
         :: else -> skip;
         fi;
-        Lb: printf("\n    The backup has run\n\n");          /* to keep track whether the backup has run once */  
+        Lb: printf("The backup has run\n");          /* to keep track whether the backup has run once */  
    od;
 }
 
@@ -98,8 +98,8 @@ proctype controller(chan input1; chan input2)
 
 
 init
-{ 
- run master(sensor_to_master, master_to_controller);
+{
+  run master(sensor_to_master, master_to_controller);
   run backup(sensor_to_backup, backup_to_controller);
   run sensor(sensor_to_master, sensor_to_backup);
   run controller(master_to_controller, backup_to_controller);
@@ -119,7 +119,7 @@ init
 */
 
 
-ltl p1 { ( [] <> (runM ) ) } /*-> ([] <> ( safe ) ) }*/
+ltl p1 { [] <> (runM ) -> [] <> ( safe ) }
 /*ltl p1 /* write your property for Q2a */
 /*ltl p2 /* write your property for Q2b */
 /*ltl p3 /* write your property for Q2c */
