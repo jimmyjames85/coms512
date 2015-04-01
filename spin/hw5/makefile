@@ -6,7 +6,7 @@ all: pan
 
 
 run: trail ${file}.trail
-	spin -t -v ${file}
+	spin -t -v ${file}; rm ${file}.trail
 
 #-g show all global variables
 

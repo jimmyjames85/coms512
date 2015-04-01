@@ -1,8 +1,12 @@
+#define PROBLEM_E 1
+
 bool lost[2];    /* 
                       This keeps track of lossy property: non-deterministic 
                       lost[0]: if the channel from the master to controller is lossy
                       lost[1]: if the channel from the backup to controller is lossy
 		 */
+
+
 
 
 /*
@@ -14,6 +18,7 @@ chan sensor_to_backup = [0] of {bit};
 chan master_to_controller = [0] of {bit};
 chan backup_to_controller = [0] of {bit};
 
+bit fueling=0;
 bit master_responsive = 1;      /* 0 means unresponsive */
 bit fuel_level;                 /* 0 means low; 1 means ok */
 bit sent_to_master;             /* for the sensor to keep track of whether or not to send message to backup */
@@ -72,15 +77,26 @@ Lb:    printf("\n\n    The backup has run: %d\n\n\n=============================
 
 proctype sensor(chan output1; chan output2)
 {
+
   /* fuel_level is low: sensor in action
-      Sensor sends message to backup only after it has sent message to the master
-  */
+         Sensor sends message to backup only after it has sent message to the master
+     */
 Ls:
+#if PROBLEM_E
   do
-    :: atomic{ fuel_level == 0 -> output1! 1; sent_to_master = 1; } 
+    :: atomic{ fueling == 1 -> fuel_level = 1; sent_to_master = 0; } /* reset */
+    :: atomic{ fueling == 0 && sent_to_master==0 && fuel_level == 0 -> output1! 1; sent_to_master = 1; }
+    :: atomic{ fueling == 0 && fuel_level == 0 & sent_to_master == 1 -> output2! 1; }
+    :: atomic{ fueling == 0 && fuel_level == 1 -> sent_to_master = 0; fuel_level = 0; }
+  od;
+#else
+  do
+    :: atomic{ fuel_level == 0 -> output1! 1; sent_to_master = 1; }
     :: atomic{ fuel_level == 0 & sent_to_master == 1 -> output2! 1; }
     :: atomic{ fuel_level == 1 -> sent_to_master = 0; fuel_level = 0; }
-  od; 
+   od; 
+#endif
+  
 }
 
 
@@ -92,8 +108,8 @@ proctype controller(chan input1; chan input2)
   bit x;
 Lc:
   do
-    :: atomic{ input1? x -> fuel_level = 1;  }
-    :: atomic{ input2? x -> fuel_level = 1;  }
+    :: atomic{ input1? x -> fuel_level = 1; PROBLEM_E == 1 -> sent_to_master = 0; fueling = 1;}
+    :: atomic{ input2? x -> fuel_level = 1; PROBLEM_E == 1 -> sent_to_master = 0;  fueling = 1;}
   od;
 }
 
@@ -122,107 +138,211 @@ init
 
 
 /*
-always noloss
-always responsive
-
-(infinitely often runM -> infinitely safe)
+============================================================================
  
-ltl p1 { ( ([] noloss && [] responsive &&   (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+ I've interpreted this question in two ways for each sub problem. The
+ homework said this SPIN model was for the specification (without
+ hazards). This to me means the master is never lossy, always
+ responsive and is always executed. However, I wasn't sure if the
+ hazards presented in homework 3 were supposed to be included. In
+ other words lossines, responsiveness and fairness can be
+ non-deterministic. So I give an alternate answer for each problem below.
+
+
+============================================================================
+Problem 2 (a)
+
+Assumptions:
+ 
+    noloss:      holds all the time
+    responsive:  holds all the time
 
  
- TRUE
-
-
-
-
-However, if the lossines and responsiveness of the master is non-deterministic than this is FALSE
-
-non-deterministic noloss
-non-deterministic responsive
-
-(infinitely often runM -> infinitely safe)
+Proposition:
  
-ltl p1_alternate { ( (  [] <> (runM)  ) -> ( [] <> (safe) ) )}
+    infinitely often runM -> infinitely often safe
+ 
 
-FALSE
+LTL:
+ 
+    ltl p1 { ( ([] noloss && [] responsive &&   (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+
+
+Result: TRUE
+ 
+    No Cycles were found implying this property is true
+
+
+ 
+Problem 2 (a) - Alternate Assumptions
+
+Alternate Assumptions:
+ 
+    noloss:      non-deterministic
+    responsive:  non-deterministic
+
+Proposition:
+
+    infinitely often runM -> infinitely often safe
+
+
+LTL:
+
+    ltl p1_alternate { ( (  [] <> (runM)  ) -> ( [] <> (safe) ) )}
+
+Result: FALSE
+
+    A Cycle is found where the master is responsive but is always
+    lossy and the backup never signals the fuel controller
+
+============================================================================
  */
 
 
+/*
+Problem 2 (b)
+
+Assumptions:
+ 
+    responsive:  holds all the time
+
+ 
+Proposition:
+ 
+    infinitely often noloss AND infinitely often runM -> infinitely safe
+ 
+
+LTL:
+
+    ltl p2 { ( ([] responsive && ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+
+Result: TRUE
+
+    No Cycles were found implying this property is true
+
+
+
+
+Problem 2 (a) - Alternate Assumptions
+
+Alternate Assumptions:
+ 
+    responsive:  non-deterministic
+
+Proposition:
+
+    infinitely often noloss AND infinitely often runM -> infinitely safe
+
+
+LTL:
+
+    ltl p2_alternate { ( ( ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+
+Result: FALSE
+
+    A Cycle is found where the master is always unresponsive and never
+    signals the fuel controller. When the backup is run the controller
+    sets the fuel_level to 1 but the sensor is never immediately aware
+    this. This is because of the way it was modled. This is fixed in
+    in problem 2(e).
+
+ 
+
+*/
+
+
+    ltl p2_alternate { ( ( ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+
+/*
+
+
+Problem 2 (c)
+
+Assumptions:
+ 
+    none
+
+ 
+Proposition:
+ 
+    infinitely often responsive infinitely often noloss AND infinitely often runM -> infinitely safe
+
+ 
+LTL:
+
+     ltl p3 { ( ( ([] <> responsive ) && ([] <> noloss) &&  (  [] <> (runM)  ) ) -> ( [] <> (safe) ) )}
+
+
+Result: TRUE
+
+    No Cycles were found implying this property is true
+
+
+
+
+Problem 2 (c) - No Alternate Assumptions
+
+*/
 
 
 /*
-always responsive
 
-( infinitely often noloss AND infinitely often runM -> infinitely safe)
+Problem 2 (d)
 
- ltl p2 { ( ([] responsive && ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
+Assumptions:
+ 
+    noloss:  holds all the time
+      runM:  holds all the time
+ 
+Proposition:
+ 
+     infinitely often responsive -> ( [] <> (safe))
+ 
 
- TRUE
+LTL:
+    
+    ltl p4 { ( ( ([] noloss ) && ([] runM) &&  (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )}
+
+ 
+Result: TRUE
+
+    No Cycles were found implying this property is true
 
 
+ 
+Problem 2 (d) - Alternate Assumptions
 
-However, if the responsiveness of the master is non-deterministic than this is FALSE
+Alternate Assumptions:
+ 
+    noloss:  non-deterministic
+      runM:  non-deterministic 
+
+ 
+Proposition:
+
+     infinitely often responsive -> ( [] <> (safe))
+
+LTL:
+
+     ltl p4_alternate { ( ( (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )}
 
 
-non-deterministic responsive
+Result: FALSE
 
-( infinitely often noloss AND infinitely often runM -> infinitely safe)
+    A Cycle is found where the master is always lossy and fuel sensor
+    only executes the first option in the do block. It doesn't keep
+    track of whether it already sent a message to the master. I think
+    ther should be a gaurd on the first option that prevents it from
+    being executed unless sent_to_master==0. However, when I put this
+    gaurd on another cycle was found where the backup does get called
+    but the backup never calls the fuel controller because the master
+    responsive.
 
- ltl p2_alternate { ( ( ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
-
-FALSE
 */
 
 
 
 
-
-
-/*
-
-( infinitely often responsive infinitely often noloss AND infinitely often runM -> infinitely safe)
-
-
- ltl p3 { ( ( ([] <> responsive ) && ([] <> noloss) &&  (  [] <> (runM)  ) ) -> ( [] <> (safe) ) )}
-
- TRUE
-*/
-
-/*
-always noloss
-always runM
-
- (infinitely often responsive -> ( [] <> (safe)))
-
-ltl p4 { ( ( ([] noloss ) && ([] runM) &&  (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )}
-
- TRUE
-
-
-non-deterministic noloss
-non-deterministic runM
-
- However, if the lossiness and the execution of the master is non-deterministic than this is FALSE
- 
- ltl p4_alternate { ( ( (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )}
-*/
-
-
-
-/*ltl p1 { ([] (responsive)) -> (! ( [] (! ([] ( master_responsive==1) )))) }*/
-/*ltl p1 { ([] <> (safe)) }*/
-
-/*/ltl p1 /* write your property for Q2a */
-/*ltl p2 /* write your property for Q2b */
-/*ltl p3 /* write your property for Q2c */
-/*ltl p4 /* write your property for Q2d */
-
-/**************************************
- 
-Answers to the Questions 2a-e:  
- 
- 
- ***************************************/ 
 
 
 
