@@ -1,4 +1,6 @@
-#define PROBLEM_E 1
+
+
+#define PROBLEM_E 0
 
 bool lost[2];    /* 
                       This keeps track of lossy property: non-deterministic 
