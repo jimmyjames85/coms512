@@ -1,3 +1,55 @@
+/*
+
+My plan to model this was to have the byte rock be
+non-deterministically chosen. This is the decider of what frog will
+may make a move (if possible). The moves() proc always increments or
+decrements this value and it always stays between 0 and 6.
+
+After the rock position has been decided the moves() proc moves the
+frog at that posistion to another rock (if possible). My ltl spec:
+
+ ltl frogCross { ! ( <> ( finalPositions ) ) }
+
+says, "There is no future where finalPositions is true" where
+finalPositions is defined as:
+ 
+                       (  ( position[0] == 2 ) && \ All yellow  
+			  ( position[1] == 2 ) && \ frogs on the 
+			  ( position[2] == 2 ) && \ left
+			  ( position[3] == 0 ) && \
+			  ( position[4] == 1 ) && \ All green
+			  ( position[5] == 1 ) && \ frogs on the 
+			  ( position[6] == 1 ) )    right
+
+
+This ltl propisition is false and spin outputs a path where
+finalPositions is true. To see the final solution run spin -t and pipe
+it into grep "^ Frog"
+ 
+ Frog 2 moves from 4 to 3
+ Frog 1 moves from 2 to 4
+ Frog 1 moves from 1 to 2
+ Frog 2 moves from 3 to 1
+ Frog 2 moves from 5 to 3
+ Frog 2 moves from 6 to 5
+ Frog 1 moves from 4 to 6
+ Frog 1 moves from 2 to 4
+ Frog 1 moves from 0 to 2
+ Frog 2 moves from 1 to 0
+ Frog 2 moves from 3 to 1
+ Frog 2 moves from 5 to 3
+ Frog 1 moves from 4 to 5
+ Frog 1 moves from 2 to 4
+ Frog 2 moves from 3 to 2
+
+
+Another way that works is:
+
+  ltl frogCross {  ( [] ( ! finalPositions ) ) }
+
+ 
+*/
+
 int position[7]; /* 0: no frog in the position; 1: green frogs in the position; 2: yellow frogs in the position */
 
 #define GREEN 1
@@ -37,10 +89,10 @@ proctype moves()
 	    :: ( rock<6 ) -> rock=rock+1 -> printf ("\n\n ________checking Rock # %d\n\n", rock) 
 	    :: ( rock>0 ) -> rock=rock-1-> printf ("\n\n ________checking Rock # %d\n\n", rock) 
        fi 
-    :: position[rock] == GREEN && rock < 6 && position[rock+1] == 0 -> move(rock, rock+1, GREEN) /* printf("\n\nfrog at %d could move to %d\n\n", rock, rock + 1 );*/
-    :: position[rock] == GREEN && rock < 5 && position[rock+2] == 0  -> move(rock, rock+2, GREEN)/* printf("\n\nfrog at %d could move to %d\n\n", rock, rock + 2 );*/
-    :: position[rock] == YELLOW && rock > 0 && position[rock-1] == 0  ->move(rock, rock-1, YELLOW)/* printf("\n\nfrog at %d could move to %d\n\n", rock, rock - 1 );*/
-    :: position[rock] == YELLOW && rock > 1 && position[rock-2] == 0  -> move(rock, rock-2,YELLOW)/* printf("\n\nfrog at %d could move to %d\n\n", rock, rock - 2 );*/
+    :: position[rock] == GREEN && rock < 6 && position[rock+1] == 0 -> move(rock, rock+1, GREEN) 
+    :: position[rock] == GREEN && rock < 5 && position[rock+2] == 0  -> move(rock, rock+2, GREEN)
+    :: position[rock] == YELLOW && rock > 0 && position[rock-1] == 0  ->move(rock, rock-1, YELLOW)
+    :: position[rock] == YELLOW && rock > 1 && position[rock-2] == 0  -> move(rock, rock-2,YELLOW)
   od
 }
 
@@ -76,5 +128,5 @@ init
 			  ( position[5] == 1 ) && \
 			  ( position[6] == 1 ) )
 
+/*ltl frogCross {  ( [] ( ! finalPositions ) ) } */
 ltl frogCross { ! ( <> ( finalPositions ) ) }
-

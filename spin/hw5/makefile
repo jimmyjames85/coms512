@@ -1,12 +1,12 @@
-file=fuel-hw.pml
+PML_FILE=frogcrossing-hw.pml
 NEXTENABLED=
 NONEXT=-DNXT
 
 all: pan
 
 
-run: trail ${file}.trail
-	spin -t -v ${file}; rm ${file}.trail
+run: trail ${PML_FILE}.trail
+	spin -t -v ${PML_FILE}; rm ${PML_FILE}.trail
 
 #-g show all global variables
 
@@ -16,8 +16,8 @@ trail: pan
 pan: pan.c
 	gcc ${NEXTENABLED} -DXUSAFE -o pan pan.c
 
-pan.c: ${file}
-	spin -a ${file}
+pan.c: ${PML_FILE}
+	spin -a ${PML_FILE}
 
 clean:
 	rm pan*; rm *.tmp; rm *.trail; clear

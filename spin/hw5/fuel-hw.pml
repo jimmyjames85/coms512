@@ -1,6 +1,15 @@
-
-
+/*
+ Set PROBLEM_E=1 for Homework 5 2(e)
+*/
 #define PROBLEM_E 0
+#if PROBLEM_E
+/*This is a way for the fuel sensor to immediately detect when the
+fuel controller begins pumping fuel. */
+bit fueling=0;
+#endif
+
+
+
 
 bool lost[2];    /* 
                       This keeps track of lossy property: non-deterministic 
@@ -20,12 +29,10 @@ chan sensor_to_backup = [0] of {bit};
 chan master_to_controller = [0] of {bit};
 chan backup_to_controller = [0] of {bit};
 
-bit fueling=0;
+
 bit master_responsive = 1;      /* 0 means unresponsive */
 bit fuel_level;                 /* 0 means low; 1 means ok */
 bit sent_to_master;             /* for the sensor to keep track of whether or not to send message to backup */
-
-
 
 proctype master(chan input; chan output)
 {
@@ -86,8 +93,8 @@ proctype sensor(chan output1; chan output2)
 Ls:
 #if PROBLEM_E
   do
-    :: atomic{ fueling == 1 -> fuel_level = 1; sent_to_master = 0; } /* reset */
-    :: atomic{ fueling == 0 && sent_to_master==0 && fuel_level == 0 -> output1! 1; sent_to_master = 1; }
+    :: atomic{ fueling == 1 -> fuel_level = 1; sent_to_master = 0; } /* reset tank to full*/
+    :: atomic{ fueling == 0 && sent_to_master==0 && fuel_level == 0 -> output1! 1; sent_to_master = 1; } /*only run if sent_to_master==0*/
     :: atomic{ fueling == 0 && fuel_level == 0 & sent_to_master == 1 -> output2! 1; }
     :: atomic{ fueling == 0 && fuel_level == 1 -> sent_to_master = 0; fuel_level = 0; }
   od;
@@ -110,8 +117,13 @@ proctype controller(chan input1; chan input2)
   bit x;
 Lc:
   do
-    :: atomic{ input1? x -> fuel_level = 1; PROBLEM_E == 1 -> sent_to_master = 0; fueling = 1;}
-    :: atomic{ input2? x -> fuel_level = 1; PROBLEM_E == 1 -> sent_to_master = 0;  fueling = 1;}
+#if PROBLEM_E    
+    :: atomic{ input1? x -> fuel_level = 1; fueling = 1;}
+    :: atomic{ input2? x -> fuel_level = 1; fueling = 1;}
+#else
+    :: atomic{ input1? x -> fuel_level = 1;}
+    :: atomic{ input2? x -> fuel_level = 1;}							      
+#endif
   od;
 }
 
@@ -153,7 +165,8 @@ init
 
 ============================================================================
 Problem 2 (a)
-
+============================================================================
+ 
 Assumptions:
  
     noloss:      holds all the time
@@ -174,7 +187,7 @@ Result: TRUE
  
     No Cycles were found implying this property is true
 
-
+---------------------------------------------------------------------------- 
  
 Problem 2 (a) - Alternate Assumptions
 
@@ -197,13 +210,13 @@ Result: FALSE
     A Cycle is found where the master is responsive but is always
     lossy and the backup never signals the fuel controller
 
-============================================================================
+
  */
-
-
 /*
+============================================================================
 Problem 2 (b)
-
+============================================================================
+ 
 Assumptions:
  
     responsive:  holds all the time
@@ -224,8 +237,8 @@ Result: TRUE
 
 
 
-
-Problem 2 (a) - Alternate Assumptions
+----------------------------------------------------------------------------
+Problem 2 (b) - Alternate Assumptions
 
 Alternate Assumptions:
  
@@ -246,20 +259,15 @@ Result: FALSE
     signals the fuel controller. When the backup is run the controller
     sets the fuel_level to 1 but the sensor is never immediately aware
     this. This is because of the way it was modled. This is fixed in
-    in problem 2(e).
+    in problem 2(e). If PROBLEM_E is set to 1 this will pass.
 
  
-
 */
-
-
-    ltl p2_alternate { ( ( ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )}
-
 /*
-
-
+============================================================================
 Problem 2 (c)
-
+============================================================================
+ 
 Assumptions:
  
     none
@@ -274,6 +282,8 @@ LTL:
 
      ltl p3 { ( ( ([] <> responsive ) && ([] <> noloss) &&  (  [] <> (runM)  ) ) -> ( [] <> (safe) ) )}
 
+^                             ^
+'----This might take second...'
 
 Result: TRUE
 
@@ -285,12 +295,11 @@ Result: TRUE
 Problem 2 (c) - No Alternate Assumptions
 
 */
-
-
 /*
-
+============================================================================ 
 Problem 2 (d)
-
+============================================================================
+ 
 Assumptions:
  
     noloss:  holds all the time
@@ -310,8 +319,7 @@ Result: TRUE
 
     No Cycles were found implying this property is true
 
-
- 
+----------------------------------------------------------------------------
 Problem 2 (d) - Alternate Assumptions
 
 Alternate Assumptions:
@@ -339,13 +347,13 @@ Result: FALSE
     gaurd on another cycle was found where the backup does get called
     but the backup never calls the fuel controller because the master
     responsive.
-
+============================================================================
 */
 
-
-
-
-
-
-
-
+/* ltl p1 { ( ([] noloss && [] responsive &&   (  [] <> (runM)  )) -> ( [] <> (safe) ) )} */
+/* ltl p1_alternate { ( (  [] <> (runM)  ) -> ( [] <> (safe) ) )} */
+/* ltl p2 { ( ([] responsive && ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )} */
+/* ltl p2_alternate { ( ( ([] <> noloss) &&  (  [] <> (runM)  )) -> ( [] <> (safe) ) )} */
+/* ltl p3 { ( ( ([] <> responsive ) && ([] <> noloss) &&  (  [] <> (runM)  ) ) -> ( [] <> (safe) ) )} */
+/* ltl p4 { ( ( ([] noloss ) && ([] runM) &&  (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )} */
+/* ltl p4_alternate { ( ( (  [] <> (responsive)  ) ) -> ( [] <> (safe) ) )} */
