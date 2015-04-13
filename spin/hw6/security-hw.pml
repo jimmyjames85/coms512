@@ -30,23 +30,11 @@ typedef crypt
 /*
    Use these macros for sending, receiving and intercepting messages with print statements
 */
-#define send(sender, receiver, packet, chan) atomic \
-        { \
-	  printf("%e sends %e to %e with encryptions: %e: %e\n", sender, packet.message, receiver, packet.key1, packet.key2); \
-	  chan! sender, receiver, packet; \
-	}
+#define send(sender, receiver, packet, chan) atomic { printf("%e sends %e to %e with encryptions: %e: %e\n", sender, packet.message, receiver, packet.key1, packet.key2); chan! sender, receiver, packet; }
 
-#define receive(sender, receiver, packet, chan) atomic \
-        { \
-	  chan? sender, receiver, packet; \
-	  printf("%e receives %e from %e with encryptions: %e: %e\n", receiver, packet.message, sender, packet.key1, packet.key2); \
-	}
+#define receive(sender, receiver, packet, chan) atomic { chan? sender, receiver, packet; printf("%e receives %e from %e with encryptions: %e: %e\n", receiver, packet.message, sender, packet.key1, packet.key2); }
 
-#define intercept(sender, receiver, packet, chan) atomic \
-        { \
-	  chan? sender, receiver, packet; \
-	  printf("Charlie intercepts %e from %e to %e with encryptions: %e: %e\n", packet.message, sender, receiver, packet.key1, packet.key2); \
-	}
+#define intercept(sender, receiver, packet, chan) atomic { chan? sender, receiver, packet; printf("Charlie intercepts %e from %e to %e with encryptions: %e: %e\n", packet.message, sender, receiver, packet.key1, packet.key2); }
 
 
 chan comm = [0] of {mtype, mtype, crypt}; /* sender, receiver, encrypted message */
@@ -88,17 +76,49 @@ L1:
 */
 active proctype BobBehavior() 
 {
+  mtype partner1 = Alice;
+  mtype partner2 = Charlie;
+  mtype partner;
+  crypt data1, data2;
 
+  atomic /* Construct the message */
+  {
+    data1.key1 = KB;
+    data2.key1 = KB;
+
+    data1.key2 = NONE;
+    data2.key2 = NONE;
+
+    data1.message = MSG1;
+    data2.message = MSG2;
+  }
+
+
+  send(Bob, Alice, data1, comm);
+  send(Bob, Charlie, data2, comm);
+
+L1:
+  do
+    ::
+       receive(partner, Alice, data1, comm);
+       if
+	 :: data1.key1 == KA -> data1.key1 = NONE; /* decrypt the message */
+	 :: else -> goto L1;
+       fi;
+       send(Bob, partner, data1, comm);
+  od;
+
+  
 }
 
 
 /*
    Write the behavior of dishonest Charlie
 */
-active proctype CharlieBehavior()
+/*active proctype CharlieBehavior()
 {
 
 }
 
 
-ltl safe /* Write your property here */
+/*ltl safe /* Write your property here */
