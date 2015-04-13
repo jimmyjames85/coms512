@@ -30,24 +30,9 @@ typedef crypt
 /*
    Use these macros for sending, receiving and intercepting messages with print statements
 */
-#define send(sender, receiver, packet, chan) atomic \
-        { \
-	  printf("%e sends %e to %e with encryptions: %e: %e\n", sender, packet.message, receiver, packet.key1, packet.key2); \
-	  chan! sender, receiver, packet; \
-	}
-
-#define receive(sender, receiver, packet, chan) atomic \
-        { \
-	  chan? sender, receiver, packet; \
-	  printf("%e receives %e from %e with encryptions: %e: %e\n", receiver, packet.message, sender, packet.key1, packet.key2); \
-	}
-
-#define intercept(sender, receiver, packet, chan) atomic \
-        { \
-	  chan? sender, receiver, packet; \
-	  printf("Charlie intercepts %e from %e to %e with encryptions: %e: %e\n", packet.message, sender, receiver, packet.key1, packet.key2); \
-	}
-
+#define send(sender, receiver, packet, chan) atomic { printf("%e sends %e to %e with encryptions: %e: %e\n", sender, packet.message, receiver, packet.key1, packet.key2); chan! sender, receiver, packet; }
+#define receive(sender, receiver, packet, chan) atomic { chan? sender, receiver, packet; printf("%e receives %e from %e with encryptions: %e: %e\n", receiver, packet.message, sender, packet.key1, packet.key2); }
+#define intercept(sender, receiver, packet, chan) atomic { chan? sender, receiver, packet; printf("Charlie intercepts %e from %e to %e with encryptions: %e: %e\n", packet.message, sender, receiver, packet.key1, packet.key2); }
 
 chan comm = [0] of {mtype, mtype, crypt}; /* sender, receiver, encrypted message */
 
