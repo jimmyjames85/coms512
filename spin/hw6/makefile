@@ -1,9 +1,11 @@
-PML_FILE=security-hw.pml
+PML_FILE=ns.pml
 NEXTENABLED=
 NONEXT=-DNXT
 
-all: pan
+all: interactive
 
+interactive: ${PML_FILE=ns}
+	spin -i $(PML_FILE);
 
 run: trail ${PML_FILE}.trail
 	spin -t -v ${PML_FILE}; rm ${PML_FILE}.trail
