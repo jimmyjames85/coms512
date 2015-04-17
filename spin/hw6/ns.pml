@@ -44,7 +44,6 @@ active proctype Alice()
   Crypt dataMsg2;
   do
     ::  network ? msg2, agentA, dataMsg2; -> goto RECBOBSMSG
-/*    ::  data.data1 == nonceA -> goto RECBOBSMSG*/
   od;
 RECBOBSMSG:
 
@@ -95,12 +94,6 @@ active proctype Bob()
     ::atomic{partnerB = agentI; pkey = keyI;};
   fi;
 
-  /* Wait for Alice to send msg1 */
-/*  do
-    ::  network ? msg1, agentB, dataMsg1 -> goto BRESPONDS;
-/*    ::  dataMsg1.data1 == agentA -> goto BRESPONDS;*/
-/*  od;*/
-
   network ? msg1, agentB, dataMsg1
 BRESPONDS:
   
@@ -146,8 +139,6 @@ BCOMPLETE:
 
   statusB = ok;
 }
-
-
 
 bool knows_nonceA=false;
 bool knows_nonceB=false;

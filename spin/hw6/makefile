@@ -1,8 +1,11 @@
+SECURITY_FILE=security-hw.pml
+SECURITY_FILTER="^[[:space:]]*INFO:"
+
 NS_FILE=ns.pml
 NS_FILTER="^[[:space:]]+(Alice)|^[[:space:]]+(Bob)|^[[:space:]]+(Intruder)"
 
-PML_FILE=${NS_FILE}
-GREP_FILTER=${NS_FILTER}
+PML_FILE= ${SECURITY_FILE} #${NS_FILE}
+GREP_FILTER=${SECURITY_FILTER} #${NS_FILTER}
 
 
 NEXTENABLED=

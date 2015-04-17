@@ -60,7 +60,7 @@ active proctype AliceBehavior()  /* normal behavior of originator */
   }
   
   send(Alice, Bob, data1, comm);
-/*  send(Alice, Charlie, data2, comm);*/
+  send(Alice, Charlie, data2, comm);
   
 LA:
   do
@@ -74,7 +74,7 @@ LA:
   od;
 }
 
-#define encrypt2(data,key) atomic{data.key1 != NONE && data.key2 == NONE -> data.key2 = key;};
+#define encrypt2(data,key) atomic{data.key1 != NONE && data.key2 == NONE -> data.key2 = key;}
 #define decypher(sender, receiver, data, key) atomic{data.key1 == NONE && data.key2==key -> data.key2=NONE; printf("\n\n\t\tINFO: %e decyphers %e's %e\n\n",receiver, sender, data.message)}
 
 
@@ -106,6 +106,7 @@ LB:
 ****************************************************/
 active proctype CharlieBehavior()
 {
+
   int msgCount=0;
   Crypt dataStore[3];
   int msgId;
@@ -115,39 +116,55 @@ active proctype CharlieBehavior()
   Crypt data;
   mtype sender;
   mtype receiver;
+
+
   
 LC:
   do
+   /* ::  /* Honest Behavior 
+       receive(partner, Charlie, data, comm);
+       if
+	 :: encrypt2(data,keyC)  encrypt the message a second time 
+	 :: decypher(partner, Charlie, data, keyC);	    
+	 :: else -> goto LC;
+       fi;
+       data.key1!=NONE && data.key2==keyC -> send(Charlie, partner, data, comm);*/
+
+    
     ::
        /* Note: Charlie can Intercept his own messages resulting in a normal receive */
        if
-	 :: intercept(Alice, receiver, data, comm);
-	 :: intercept(Bob, receiver, data, comm);
-	 :: goto LC; /*don't retrieve/intercept*/
+	 :: intercept(Alice, receiver, data, comm)-> goto PROCESS;
+	 :: intercept(Bob, receiver, data, comm)-> goto PROCESS;
        fi;
        
 PROCESS:
-       /* Save message for later */
-       copyMessage(data,dataStore[msgCount]);
-       msgCount = msgCount + 1;
 
+
+       atomic
+       {
+	 /* Save message for later */
+	 printf("\n\n\t\t %e %e %e\n\n", data.key1, data.key2, data.message);
+	 copyMessage(data,dataStore[msgCount]);
+	 printf("\n\n\t\t %e %e %e\n\n", data.key1, data.key2, data.message);
+	 msgCount = msgCount + 1;
+       }
        /*Select which message we will send*/
-       if
-	 :: msgCount>0 -> msgId=0;
-	 :: msgCount>1 -> msgId=1;
-	 :: msgCount>2 -> msgId=2;
+       if 
+	 :: msgCount>0 -> msgId=1;
+	 :: msgCount>1 -> msgId=2;
+	 :: msgCount>2 -> msgId=3;
        fi;
        
        /* Retrieve that message from the dataStore */
-       printf("\n\n\t\tmsgId=%d %e %e %e\n\n",msgId,  data.key1, data.key2, data.message);
+       printf("\n\n\t\t %e %e %e\n\n", data.key1, data.key2, data.message);
        copyMessage(dataStore[msgId],data);
-       printf("\n\n\t\tmsgId=%d %e %e %e\n\n",msgId,  data.key1, data.key2, data.message);
-
+       printf("\n\n\t\t %e %e %e\n\n", data.key1, data.key2, data.message);
        
        /*May or may not double encrypt*/
        if
-	 :: atomic{encrypt2(data,keyC); printf( "\n\n\t\tINFO: Encrypting\n\n");}  /* encrypt the message a second time */
-	 :: printf("\n\n\t\tINFO: No Encryption\n");
+	 :: skip;
+	 :: encrypt2(data,keyB);  /* encrypt the message a second time */
        fi;
 	 
        /* select recipient */ 
