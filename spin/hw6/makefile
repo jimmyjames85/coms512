@@ -1,4 +1,10 @@
-PML_FILE=ns.pml
+NS_FILE=ns.pml
+NS_FILTER="^[[:space:]]+(Alice)|^[[:space:]]+(Bob)|^[[:space:]]+(Intruder)"
+
+PML_FILE=${NS_FILE}
+GREP_FILTER=${NS_FILTER}
+
+
 NEXTENABLED=
 NONEXT=-DNXT
 
@@ -8,8 +14,7 @@ interactive: ${PML_FILE=ns}
 	spin -i $(PML_FILE);
 
 runFilter: trail ${PML_FILE}.trail
-	make run | grep -E "^[[:space:]]+(Alice)|^[[:space:]]+(Bob)|^[[:space:]]+(Intruder)"
-#	spin -t -v ${PML_FILE} | grep -E "^[[:space:]]+(Alice)|^[[:space:]]+(Bob)"; rm ${PML_FILE}.trail
+	spin -t -v ${PML_FILE} | grep -E ${GREP_FILTER}; rm ${PML_FILE}.trail
 
 run: trail ${PML_FILE}.trail
 	spin -t -v ${PML_FILE}; rm ${PML_FILE}.trail
