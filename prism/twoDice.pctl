@@ -1,0 +1,15 @@
+
+//Probability of Wining the Game
+P=? [ F state=2 ]
+
+//Probability of Wining in at most 5 rolls
+//P=? [ F state=2 & rollCount<=5] 
+
+//Probability of Losing the Game
+//P=? [ F state=3 ]
+
+//Probability of Wining on the First Roll
+//P=? [ F state=2 & rollCount=1] 
+
+
+

@@ -4,8 +4,10 @@ SECURITY_FILTER="^[[:space:]]*INFO:"
 NS_FILE=ns.pml
 NS_FILTER="^[[:space:]]+(Alice)|^[[:space:]]+(Bob)|^[[:space:]]+(Intruder)"
 
-PML_FILE= ${SECURITY_FILE} #${NS_FILE}
-GREP_FILTER=${SECURITY_FILTER} #${NS_FILTER}
+PML_FILE= ${SECURITY_FILE}
+#${NS_FILE}
+GREP_FILTER=${SECURITY_FILTER}
+#${NS_FILTER}
 
 
 NEXTENABLED=
@@ -13,7 +15,7 @@ NONEXT=-DNXT
 
 all: interactive
 
-interactive: ${PML_FILE=ns}
+interactive: ${PML_FILE}
 	spin -i $(PML_FILE);
 
 runFilter: trail ${PML_FILE}.trail
